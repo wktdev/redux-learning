@@ -3,7 +3,7 @@ const initialState = {
 }
 
 export default function playToggle (state = initialState, action) {
-  console.log(state);
+    console.log(state);
     if (action.type === "TOGGLE_PLAY") {
         if (state.isPlaying) {
             return Object.assign({}, state, { isPlaying: false})

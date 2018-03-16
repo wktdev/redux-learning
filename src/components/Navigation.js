@@ -1,30 +1,30 @@
 
 import React, { Component } from 'react';
 import {connect} from 'react-redux';
+
+
 const mapStateToProps = state =>({
-	isPlaying:false
+    isPlaying:state.isPlaying
 });
-
-const mapDispatchToProps = (dispatch)=>{  // attach all your methods here
-    return{
- 
-    }
-}
-
 
 class Navigation extends Component {
 	render(){
-        console.log(this.props.isPlaying);
+            console.log(this.props.isPlaying);
 		return(
          <div>
 
          <p>{this.props.isPlaying}</p>
-         
+
          </div>
 		)
 	}
 }
 
+const mapDispatchToProps = (dispatch)=>{  // attach all your methods here
+    return{
+        
+    }
+}
 
-export default connect(mapStateToProps, mapDispatchToProps)(Navigation)
+export default connect(mapStateToProps,mapDispatchToProps)(Navigation)
 
