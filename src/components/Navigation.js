@@ -4,7 +4,7 @@ import {connect} from 'react-redux';
 
 
 const mapStateToProps = state =>({
-    isPlaying:state.isPlaying
+    isPlaying: state.playToggle.isPlaying
 });
 
 class Navigation extends Component {
@@ -13,7 +13,7 @@ class Navigation extends Component {
 		return(
          <div>
 
-         <p>{this.props.isPlaying}</p>
+         <p>{this.props.isPlaying + ""}</p>
 
          </div>
 		)
