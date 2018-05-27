@@ -1,26 +1,25 @@
 import React, { Component } from 'react';
+import Navigation from "./components/Navigation";
+import PlayButton from './components/Playbutton';
+import Form from "./components/Form";
+
 import {createStore} from 'redux';
-import combinedReducers from "./reducers"
-import Navigation from "./components/Navigation"
-import Playbutton from './components/Playbutton';
 import {Provider} from "react-redux";
+import combinedReducers from "./reducers"
 
-
-
-
-
+// , window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
 const store = createStore(combinedReducers);
-
 
 class App extends Component {
   
   render() {
-      console.log("STORE: " + store);
+    console.log(store);
     return (
       <Provider store={store}>
           <div className="App">
             <Navigation/>
-            <Playbutton/>
+          <Form/>
+          <PlayButton/>
           </div>
       </Provider>
     );

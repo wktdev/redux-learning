@@ -13,7 +13,7 @@ class Navigation extends Component {
 		return(
          <div>
 
-         <p>{this.props.isPlaying + ""}</p>
+         {/* <p>{this.props.isPlaying + ""}</p> */}
 
          </div>
 		)
