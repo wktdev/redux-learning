@@ -1,5 +1,5 @@
 
-import  {name} from './test';
+
 
 export let audioContext = new AudioContext();
 
@@ -37,16 +37,6 @@ function audioFileLoader(fileDirectory) {
 }
 
 
-function audioBatchLoader(obj) {
-
-    for (var prop in obj) {
-        obj[prop] = audioFileLoader(obj[prop]);
-
-    }
-
-    return obj;
-
-}
 
 
 export let song = audioFileLoader('./song.wav');
