@@ -1,4 +1,3 @@
-
 import React, { Component } from 'react';
 import {connect} from 'react-redux';
 import {playAction} from '../actions/playPauseStop'
@@ -6,11 +5,11 @@ import {pauseAction} from '../actions/playPauseStop'
 import {stopAction} from '../actions/playPauseStop'
 import {recordAction} from '../actions/record'
 
-
-
 const mapStateToProps = state =>({
     isPlaying:state.playStopToggle.isPlaying,
-    timeStamp:state.playStopToggle.timeStamp
+    timeStamp:state.playStopToggle.timeStamp,
+    isRecording:state.record.isRecording
+
 });
 
 
@@ -41,8 +40,8 @@ const mapDispatchToProps = (dispatch)=>{  // attach all your methods here
 
 class Playbutton extends Component {
 	render(){
-    console.log(this.props);
-		console.log(this.props.timeStamp);
+    console.log(this.props.isRecording);
+
 		return(
          <div>
             <div>{this.props.isPlaying + ""}</div>
