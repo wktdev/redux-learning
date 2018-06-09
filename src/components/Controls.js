@@ -4,6 +4,7 @@ import {playAction} from '../actions/playPauseStopRecord'
 import {pauseAction} from '../actions/playPauseStopRecord'
 import {stopAction} from '../actions/playPauseStopRecord'
 import {recordAction} from '../actions/playPauseStopRecord'
+import {toggleTrackPlaybackAction} from '../actions/playPauseStopRecord'
 
 const mapStateToProps = state =>({
     isPlaying:state.playStopPauseRecord.isPlaying,
@@ -34,6 +35,13 @@ const mapDispatchToProps = (dispatch)=>{  // attach all your methods here
         record:  () => {
         dispatch(recordAction())
 
+       },
+
+        toggleTrackPlayback:  (indexOfTrack) => {
+          console.log("TEST");
+        dispatch(toggleTrackPlaybackAction(indexOfTrack))
+
+
        }
    }
 }
@@ -42,19 +50,17 @@ const mapDispatchToProps = (dispatch)=>{  // attach all your methods here
 class Playbutton extends Component {
 	render(){
 
-
      let tracksRecorded = this.props.recordedTracks.map((val,index)=>{
         return (
                   <li key={index}>
-                      <span>Time: {val.time}</span> <span> PLAY: <input type="checkbox"/> </span>
+                      <span>Time: {val.time}</span> <span> PLAY: <input type="checkbox"onChange={()=>this.props.toggleTrackPlayback(index)}/> </span>
 
                   </li>
-
               )
      })
 
 
-     let RecordOrStopRecording = this.props.isRecording ? "Stop Recording" : "Start Recording"
+    let RecordOrStopRecording = this.props.isRecording ? "Stop Recording" : "Start Recording"
 
 		return(
          <div>

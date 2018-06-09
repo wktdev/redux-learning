@@ -15,7 +15,7 @@ const initialState = {
     isStopped: true,
     isPaused: false,
     isRecording: false,
-    recordedTracks:[{time:"test-123"},{time:"test-123"},{time:"test-123"}],
+    recordedTracks: [{ time: "test-123", setToPlayback: false }, { time: "test-123", setToPlayback: false }, { time: "test-123", setToPlayback: false }],
     timeStamp: { startTime: undefined, stopTime: undefined, pauseTime: undefined }
 }
 
@@ -113,6 +113,11 @@ export default function playToggle(state = initialState, action) {
     //______________________________________END pause action response
 
 
+    //______________________________________BEGIN record action response
+
+
+
+
     if (action.type === "RECORD") {
 
 
@@ -129,31 +134,71 @@ export default function playToggle(state = initialState, action) {
             recordingStartCurrentTime = audioContext.currentTime
             recorder.record(soundClip);
 
-             return Object.assign({}, state, {
+            return Object.assign({}, state, {
                 isPlaying: true,
                 isStopped: false,
-                isRecording:true,
-                recordStartTime:audioContext.currentTime,
-                timeStamp: { startTime:  audioContext.currentTime, stopTime: undefined }
+                isRecording: true,
+                recordStartTime: audioContext.currentTime,
+                timeStamp: { startTime: audioContext.currentTime, stopTime: undefined }
             })
 
-        }else{
+        } else {
             mic.stop();
             song.stop()
-           
-           
+
+
 
             return Object.assign({}, state, {
                 isPlaying: false,
                 isStopped: true,
                 isPaused: false,
-                isRecording:false,
-                recordedTracks:[...state.recordedTracks,{time:0, soundClip:soundClip}],
+                isRecording: false,
+                recordedTracks: [...state.recordedTracks, { time: 0, soundClip: soundClip, setToPlayback: false }],
                 timeStamp: { startTime: undefined, stopTime: undefined }
             })
         }
 
     }
+
+    //____________________________________________________________END record action response
+
+
+    //____________________________________________________________BEGIN toggleTrackPlayback response
+
+
+    if (action.type === "TOGGLE_TRACK_PLAYBACK") {
+
+
+        console.log(state.recordedTracks);
+
+        let tracksWithNewPlaybackState = state.recordedTracks.map((val, index) => {
+
+            if (index === action.trackNumber) {
+                val.setToPlayback = val.setToPlayback === true ? false : true
+                return val
+            } else {
+                return val
+            }
+        });
+
+
+        console.log(tracksWithNewPlaybackState[0].setToPlayback + " .....");
+
+
+        return Object.assign({}, state, {
+                recordedTracks: tracksWithNewPlaybackState
+         })
+
+
+
+    }
+
+
+    //____________________________________________________________END toggleTrackPlayback response
+
+
+
+
 
     return state
 }
