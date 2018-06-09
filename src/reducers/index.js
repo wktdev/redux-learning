@@ -1,8 +1,7 @@
 import { combineReducers } from 'redux'
-import playStopToggle from './playStopToggleReducer'
-import record from "./recordReducer"
+import playStopPauseRecord from './playStopPauseRecordReducer'
+
 
 export default combineReducers({
-  playStopToggle,
-  record
+  playStopPauseRecord
 })
