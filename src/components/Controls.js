@@ -18,7 +18,7 @@ const mapStateToProps = state =>({
 const mapDispatchToProps = (dispatch)=>{  // attach all your methods here
     return{
        play:  () => {
-       	dispatch(playAction())
+       	dispatch(playAction(this.props))
 
        },
 
@@ -49,6 +49,7 @@ const mapDispatchToProps = (dispatch)=>{  // attach all your methods here
 
 class Playbutton extends Component {
 	render(){
+
 
      let tracksRecorded = this.props.recordedTracks.map((val,index)=>{
         return (
