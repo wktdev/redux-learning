@@ -211,6 +211,30 @@ export default function playToggle(state = initialState, action) {
 
     if (action.type === "RECORD") {
 
+       if (state.isPaused && state.isPlaying) {
+
+
+            // song.play()
+            // // audioRecorder.record();
+            // mic = new p5.AudioIn();
+            // mic.start();
+            // recorder = new p5.SoundRecorder();
+            // recorder.setInput(mic);
+            // soundClip = new p5.SoundFile();
+            // recordingStartCurrentTime = audioContext.currentTime
+            // recorder.record(soundClip);
+
+            return Object.assign({}, state, {
+                isPlaying: true,
+                isStopped: false,
+                isRecording: false,
+                isPaused: true,
+                recordStartTime: song.currentTime(),
+                timeStamp: { startTime: audioContext.currentTime }
+            })
+
+        }
+
         if (state.isPlaying && !state.isRecording) {
 
 
@@ -276,29 +300,7 @@ export default function playToggle(state = initialState, action) {
         }
 
 
-        if (state.isPaused) {
-
-
-            song.play()
-            // audioRecorder.record();
-            mic = new p5.AudioIn();
-            mic.start();
-            recorder = new p5.SoundRecorder();
-            recorder.setInput(mic);
-            soundClip = new p5.SoundFile();
-            recordingStartCurrentTime = audioContext.currentTime
-            recorder.record(soundClip);
-
-            return Object.assign({}, state, {
-                isPlaying: true,
-                isStopped: false,
-                isRecording: true,
-                isPaused: false,
-                recordStartTime: song.currentTime(),
-                timeStamp: { startTime: audioContext.currentTime }
-            })
-
-        }
+ 
 
     }
 
