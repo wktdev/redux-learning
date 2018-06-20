@@ -15,9 +15,20 @@ const initialState = {
     isStopped: true,
     isPaused: false,
     isRecording: false,
-    // recordedTracks: [{ time: "test-123", scheduledToPlay: false }, { time: "test-123", scheduledToPlay: false }, { time: "test-123", scheduledToPlay: false }],
     recordedTracks: [],
-    timeStamp: { startTime: undefined, stopTime: undefined, pauseTime: undefined }
+    timeStamp: { startTime: undefined, stopTime: undefined, pauseTime: 0 }
+}
+
+
+
+function cueSoundClips(state){
+    state.recordedTracks.map((val)=>{
+        if(val.time > song.currentTime()){
+            let result = song.addCue(val.time, () => { // @ ps5 cue sounds to play
+                    val.soundClip.play()
+                });
+            }
+    })
 }
 
 
@@ -25,7 +36,7 @@ const initialState = {
 export default function playToggle(state = initialState, action) {
 
     if (action.type === "STOP") {
-        console.log(song.currentTime());
+
         song.stop()
         console.log("test");
 
@@ -35,18 +46,17 @@ export default function playToggle(state = initialState, action) {
         });
         //_____________________________________END stop all cued recordings
 
-        if (state.isRecording) {
-            
+        if (state.isRecording) { //__________If recording before stop then capture the sound clip.
+
             mic.stop();
             recorder.stop();
-            let soundClipTimeStamp = state.recordStartTime - state.timeStamp.startTime;
             return Object.assign({}, state, {
                 isPlaying: false,
                 isStopped: true,
                 isPaused: false,
                 isRecording: false,
-                recordedTracks: [...state.recordedTracks, { time: soundClipTimeStamp, soundClip: soundClip, scheduledToPlay: false, isPreloaded: false }],
-                timeStamp: { startTime: state.timeStamp.startTime, stopTime: undefined }
+                recordedTracks: [...state.recordedTracks, { time: state.recordStartTime, soundClip: soundClip, scheduledToPlay: false, isPreloaded: false }],
+                timeStamp: { startTime: state.timeStamp.startTime, stopTime: undefined, pauseTime:0 }
             })
 
         } else {
@@ -56,7 +66,7 @@ export default function playToggle(state = initialState, action) {
                 isPlaying: false,
                 isStopped: true,
                 isPaused: false,
-                timeStamp: { startTime: undefined, stopTime: undefined, pauseTime: undefined }
+                timeStamp: { startTime: undefined, stopTime: undefined, pauseTime: 0 }
             })
         }
 
@@ -68,17 +78,35 @@ export default function playToggle(state = initialState, action) {
     //______________________________________BEGIN toggle play/stop response
 
     if (action.type === "PLAY") {
+
         if (state.isPlaying && state.isPaused) {
-            song.play();
+            song.play(0,1,0.1);
+
+            let allSoundClips = state.recordedTracks.map((val) => {
+
+                if(val.pauseResumePoint){
+                    val.soundClip.play(0,1,1,val.pauseResumePoint)
+                    val.pauseResumePoint = undefined;
+                    return val
+                }else{
+                    return val
+                }
+
+            })
+
+
+
             return Object.assign({}, state, {
                 isPlaying: true,
                 isStopped: false,
-                isPaused: false
+                isPaused: false,
+                timeStamp: { startTime: audioContext.currentTime, pauseTime:state.timeStamp.pauseTime },
+                recordedTracks: [...allSoundClips]
             })
 
 
         } else if (state.isStopped) {
-            song.play(0, 1, 1)
+            song.play(0, 1, 0.1) //___________If stopped then playback from beginning of song
 
             state.recordedTracks.map((val, index) => {
 
@@ -94,7 +122,7 @@ export default function playToggle(state = initialState, action) {
             return Object.assign({}, state, {
                 isPlaying: true,
                 isStopped: false,
-                timeStamp: { startTime: audioContext.currentTime }
+                timeStamp: { startTime: audioContext.currentTime, pauseTime:state.timeStamp.pauseTime },
             })
 
 
@@ -103,23 +131,35 @@ export default function playToggle(state = initialState, action) {
         }
     }
 
+
+
+
     //______________________________________BEGIN pause action response
 
     if (action.type === "PAUSE") {
 
-        if (state.isRecording) {
-            song.pause();
+        if(state.isPaused){
+            return Object.assign({}, state, {
+                isPlaying: true,
+                isStopped: false,
+                isPaused: true,
+                isRecording: false
+            })
+        }
 
+        if (state.isRecording) {
+            let pauseTime = song.currentTime();
+            song.pause();
+            
             mic.stop();
             recorder.stop();
-            let soundClipTimeStamp = state.recordStartTime - state.timeStamp.startTime;
             return Object.assign({}, state, {
                 isPlaying: true,
                 isStopped: false,
                 isPaused: true,
                 isRecording: false,
-                recordedTracks: [...state.recordedTracks, { time: soundClipTimeStamp, soundClip: soundClip, scheduledToPlay: false, isPreloaded: false }],
-                timeStamp: { startTime: state.timeStamp.startTime }
+                recordedTracks: [...state.recordedTracks, { time: state.recordStartTime, soundClip: soundClip, scheduledToPlay: false, isPreloaded: false }],
+                timeStamp: { startTime: state.timeStamp.startTime, pauseTime:pauseTime }
             })
 
 
@@ -127,246 +167,191 @@ export default function playToggle(state = initialState, action) {
         }
 
         if (state.isPlaying) {
-           
-           /*
-
-           song.clearCues()
-           iterate over all soundClips.
-           IF  ...soundCLip is currently playing (isPlaying).
-           THEN Get current point of playback for it(soundClip.CurrentTime).
-           set its playback to cue at pauseTimeAtSong.
-         
-
-           IF soundClip has cue after pauseTIme then reCUe them (addCue).
-
-           Play all paused soundClips immediatley from soundClip.currentTime
-
-           */
-
-           song.clearCues()
-
-           let pauseTimeAtSong = soundClip.currentTime();
-
-           state.recordedTracks.map((val)=>{
+   
+            song.clearCues();
+            let allSoundClips = state.recordedTracks.map((val)=>{
                if(val.soundClip.isPlaying()){
-                  console.log("yes: sound IS playing" );
-                  console.log(val.soundClip.currentTime());
-               }
-           })
+                  val.soundClip.pause();
+                  let soundClipPauseValue = val.soundClip._pauseTime;
+                  val.soundClip.stop();
+                  val.pauseResumePoint = soundClipPauseValue;
+                
+               }else{
+                cueSoundClips(state)
 
+               }
+            })
 
             song.pause();
 
-           
 
-           
+            return Object.assign({}, state, {
+                isPlaying: true,
+                isStopped: false,
+                isRecording: false,
+                isPaused: true
 
-            //___________________________________________________________
 
-            // if cued sound "isPlaying" then it needs to be paused.
-            
-            // AND THEN...we only want to clear the cues of 
-            // val.scheduledToPlay < song.currentTime()
-            // if they are NOT paused.
+            })
 
-            //___________________________________________________________
-
-            song.clearCues()
-
-
-            state.recordedTracks.map((val, index) => {
-
-                    if (val.scheduledToPlay < song.currentTime()) {
-
-                        let result = song.addCue(val.time, () => { // @ ps5 cue sounds to play
-                            val.soundClip.play()
-                        });
-                    }
-                });
-            
-
-
-
-        return Object.assign({}, state, {
-            isPlaying: true,
-            isStopped: false,
-            isRecording: false,
-            isPaused: true
-
-        })
-
-    }
-
-}
-
-
-//______________________________________END pause action response
-
-
-
-
-//______________________________________BEGIN record action response
-
-
-
-
-if (action.type === "RECORD") {
-
-    if (state.isPlaying && !state.isRecording) {
-
-     
-        // audioRecorder.record();
-        mic = new p5.AudioIn();
-        mic.start();
-        recorder = new p5.SoundRecorder();
-        recorder.setInput(mic);
-        soundClip = new p5.SoundFile();
-        recordingStartCurrentTime = audioContext.currentTime
-        recorder.record(soundClip);
-
-        return Object.assign({}, state, {
-            isPlaying: true,
-            isStopped: false,
-            isRecording: true,
-            isPaused: false,
-            recordStartTime: audioContext.currentTime,
-            timeStamp: { startTime: state.timeStamp.startTime, }
-        })
-
-    }
-
-
-    if (state.isPlaying && state.isRecording) {
-
-        
-
-        mic.stop();
-        recorder.stop();
-        let soundClipTimeStamp = state.recordStartTime - state.timeStamp.startTime;
-        return Object.assign({}, state, {
-            isPlaying: true,
-            isStopped: false,
-            isPaused: false,
-            isRecording: false,
-            recordedTracks: [...state.recordedTracks, { time: soundClipTimeStamp, soundClip: soundClip, scheduledToPlay: false, isPreloaded: false }],
-            timeStamp: { startTime: state.timeStamp.startTime, stopTime: undefined }
-        })
-
-    }
-
-    if (state.isStopped) {
-
-    
-        song.play()
-        // audioRecorder.record();
-        mic = new p5.AudioIn();
-        mic.start();
-        recorder = new p5.SoundRecorder();
-        recorder.setInput(mic);
-        soundClip = new p5.SoundFile();
-        recordingStartCurrentTime = audioContext.currentTime
-        recorder.record(soundClip);
-
-        return Object.assign({}, state, {
-            isPlaying: true,
-            isStopped: false,
-            isRecording: true,
-            isPaused: false,
-            recordStartTime: recordingStartCurrentTime + 0.0001, // won't start a zero! Small hack!
-            timeStamp: { startTime: audioContext.currentTime }
-        })
-
-    }
-
-
-    if (state.isPaused) {
-
-      
-        song.play()
-        // audioRecorder.record();
-        mic = new p5.AudioIn();
-        mic.start();
-        recorder = new p5.SoundRecorder();
-        recorder.setInput(mic);
-        soundClip = new p5.SoundFile();
-        recordingStartCurrentTime = audioContext.currentTime
-        recorder.record(soundClip);
-
-        return Object.assign({}, state, {
-            isPlaying: true,
-            isStopped: false,
-            isRecording: true,
-            isPaused: false,
-            recordStartTime: recordingStartCurrentTime + 0.0001, // won't start a zero! Small hack!
-            timeStamp: { startTime: audioContext.currentTime }
-        })
-
-    }
-
-}
-
-//____________________________________________________________END record action response
-
-
-//____________________________________________________________BEGIN toggleTrackPlayback response
-
-
-if (action.type === "TOGGLE_TRACK_PLAYBACK") {
-
-    let tracksWithNewPlaybackState = state.recordedTracks.map((val, index) => {
-
-
-
-        if (index === action.trackNumber) {
-            song.clearCues()
-            val.scheduledToPlay = val.scheduledToPlay === true ? false : true
-
-
-            if (val.scheduledToPlay) {
-
-                let result = song.addCue(val.time, () => { // @ ps5 cue sounds to play
-                    val.soundClip.play()
-                });
-            }
-
-
-            if (!val.scheduledToPlay) {
-
-                val.soundClip.stop()
-            }
-
-
-            return val
-
-
-        } else {
-
-            return val
         }
-    });
+
+    }
+
+
+    //______________________________________END pause action response
 
 
 
-    return Object.assign({}, state, {
-        recordedTracks: tracksWithNewPlaybackState
-    })
 
+    //______________________________________BEGIN record action response
+
+
+
+
+    if (action.type === "RECORD") {
+
+        if (state.isPlaying && !state.isRecording) {
+
+
+            // audioRecorder.record();
+            mic = new p5.AudioIn();
+            mic.start();
+            recorder = new p5.SoundRecorder();
+            recorder.setInput(mic);
+            soundClip = new p5.SoundFile();
+            recorder.record(soundClip);
+
+            return Object.assign({}, state, {
+                isPlaying: true,
+                isStopped: false,
+                isRecording: true,
+                isPaused: false,
+                recordStartTime: song.currentTime(),
+                timeStamp: { startTime: state.timeStamp.startTime, }
+            })
+
+        }
+
+
+        if (state.isPlaying && state.isRecording) {
+
+
+
+            mic.stop();
+            recorder.stop();
+
+            return Object.assign({}, state, {
+                isPlaying: true,
+                isStopped: false,
+                isPaused: false,
+                isRecording: false,
+                recordedTracks: [...state.recordedTracks, { time: state.recordStartTime, soundClip: soundClip, scheduledToPlay: false, pauseResumePoint: undefined, isPreloaded: false }],
+                timeStamp: { startTime: state.timeStamp.startTime, stopTime: undefined}
+            })
+
+        }
+
+        if (state.isStopped) {
+
+
+            song.play()
+            // audioRecorder.record();
+            mic = new p5.AudioIn();
+            mic.start();
+            recorder = new p5.SoundRecorder();
+            recorder.setInput(mic);
+            soundClip = new p5.SoundFile();
+            recorder.record(soundClip);
+
+            return Object.assign({}, state, {
+                isPlaying: true,
+                isStopped: false,
+                isRecording: true,
+                isPaused: false,
+                recordStartTime: 0.0001, // won't start a zero! Small hack!
+                timeStamp: { startTime: audioContext.currentTime }
+            })
+
+        }
+
+
+        if (state.isPaused) {
+
+
+            song.play()
+            // audioRecorder.record();
+            mic = new p5.AudioIn();
+            mic.start();
+            recorder = new p5.SoundRecorder();
+            recorder.setInput(mic);
+            soundClip = new p5.SoundFile();
+            recordingStartCurrentTime = audioContext.currentTime
+            recorder.record(soundClip);
+
+            return Object.assign({}, state, {
+                isPlaying: true,
+                isStopped: false,
+                isRecording: true,
+                isPaused: false,
+                recordStartTime: song.currentTime(),
+                timeStamp: { startTime: audioContext.currentTime }
+            })
+
+        }
+
+    }
+
+    //____________________________________________________________END record action response
+
+
+    //____________________________________________________________BEGIN toggleTrackPlayback response
+
+
+    if (action.type === "TOGGLE_TRACK_PLAYBACK") {
+
+  
+
+        let soundClipPlaybackState = state.recordedTracks.map((val, index) => {
+            
+            if (index === action.trackNumber) {
+
+                val.scheduledToPlay = val.scheduledToPlay === true ? false : true
+                  console.log(song.currentTime());
+                  console.log("val.time is: " + val.time);
+                  console.log("state.timeStamp.pauseTime is: " + state.timeStamp.pauseTime);
+
+                if (val.scheduledToPlay && val.time > state.timeStamp.pauseTime) {
+                    let result = song.addCue(val.time, () => { // @ ps5 cue sounds to play
+                        val.soundClip.play()
+                    });
+                }
+
+                if (!val.scheduledToPlay) {
+
+                    val.soundClip.stop()
+                }
+
+                return val
+
+            } else {
+
+                return val
+            }
+        });
+
+
+
+        return Object.assign({}, state, {
+            recordedTracks: soundClipPlaybackState
+        })
+
+    }
+
+
+    //____________________________________________________________END toggleTrackPlayback response
+
+    return state
 }
 
 
-//____________________________________________________________END toggleTrackPlayback response
-
-return state
-}
-
-
-/*________________________________THINGS TO DO
-
-          // In PAUSE ...if scheduled sounds are less than pause marker, then unschedule them
-
-Check timing issues and instead of referencing audioContext.currentTime reference 
-via the base song file. Fix "record from beginning" issue
-
-
-On pause stop loop through all scheduled songs and stop them / stop the cueing
-__________________________________THINGS TO DO */
