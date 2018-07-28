@@ -1,27 +1,28 @@
 
 import React, { Component } from 'react';
 import {connect} from 'react-redux';
-import { togglePlayActionCreator } from '../actions/togglePlayActionCreator'
+import { playAction } from '../actions/playAction'
 
 const mapStateToProps = state =>({
-    isPlaying:state.playToggle.isPlaying 
+     isPlaying:state.playReducerData.isPlaying,
+     isStopped:state.stopReducerData.isStopped 
 });
 
 
 const mapDispatchToProps = (dispatch)=>{  // attach all your methods here
     return{
-       togglePlayAction:  () => dispatch(togglePlayActionCreator())
+       playAction:  function(){
+           dispatch(playAction())
+       }
    }
 }
 
 
 class Playbutton extends Component {
 	render(){
-
 		return(
          <div>
-            <div>{this.props.isPlaying + ""}</div>
-            <button onClick={this.props.togglePlayAction}> CLICK ME </button>
+            <button onClick={()=>this.props.playAction()}>PLAY</button>
          </div>
 		)
 	}

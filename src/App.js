@@ -1,15 +1,16 @@
 import React, { Component } from 'react';
-import Navigation from "./components/Navigation";
-import PlayButton from './components/Playbutton';
-import Form from "./components/Form";
+import Play from './components/Play';
+import Stop from './components/Stop';
+import StateRender from './components/StateRender';
+
+
 
 import {createStore} from 'redux';
 import {Provider} from "react-redux";
 import combinedReducers from "./reducers"
 
-// , window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
-const store = createStore(combinedReducers);
 
+const store = createStore(combinedReducers, window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__());
 class App extends Component {
   
   render() {
@@ -17,9 +18,10 @@ class App extends Component {
     return (
       <Provider store={store}>
           <div className="App">
-            <Navigation/>
-          <Form/>
-          <PlayButton/>
+          <Play/>
+          <Stop/>
+          <hr/>
+          <StateRender/>
           </div>
       </Provider>
     );
