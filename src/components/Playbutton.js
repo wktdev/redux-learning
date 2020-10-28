@@ -1,31 +1,20 @@
-
-import React, { Component } from 'react';
-import {connect} from 'react-redux';
-import { togglePlayActionCreator } from '../actions/togglePlayActionCreator'
-
-const mapStateToProps = state =>({
-    isPlaying:state.playToggle.isPlaying 
-});
+import React from 'react';
+import { useDispatch, useSelector } from "react-redux";
+import { togglePlayActionCreator } from '../actions/togglePlayActionCreator';
+// <-- Reference action
 
 
-const mapDispatchToProps = (dispatch)=>{  // attach all your methods here
-    return{
-       togglePlayAction:  () => dispatch(togglePlayActionCreator())
-   }
+function PlayButton(){
+     const boolState = useSelector(state => state.playToggle.isPlaying); // gets store data
+     const dispatch = useDispatch();
+
+	 return (
+      <div>
+          <button onClick={() => dispatch({type: "TOGGLE_PLAY", isPlaying: true})}>Click me</button>
+          <div>{boolState + " "}</div>
+      </div>
+    );
 }
 
-
-class Playbutton extends Component {
-	render(){
-
-		return(
-         <div>
-            <div>{this.props.isPlaying + ""}</div>
-            <button onClick={this.props.togglePlayAction}> CLICK ME </button>
-         </div>
-		)
-	}
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(Playbutton);
+export default PlayButton
 
