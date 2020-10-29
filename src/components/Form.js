@@ -36,8 +36,8 @@ function Form(props){
 
         <ul>
         {list.map((val,index)=>{
-            return <li key={index}>{val.todo}</li>    
-           })} 
+            return <li key={index}>{val}</li>    
+           }) } 
          
           
         </ul>
