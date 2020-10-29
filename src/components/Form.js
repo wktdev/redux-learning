@@ -46,6 +46,6 @@ function Form(props){
     )
 }
 
-[{todos:{todo:"thing"}}]
+
 
 export default Form;  // add mapStateToProps
